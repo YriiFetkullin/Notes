@@ -44,17 +44,9 @@
                     </view>
                     <toolbarItems/>
                     <navigationItem key="navigationItem" id="gEg-Gu-dyV">
-                        <barButtonItem key="rightBarButtonItem" title="Готово" id="Dgl-9z-i07">
-                            <connections>
-                                <action selector="itemButton:" destination="BYZ-38-t0r" id="jY8-rH-HXV"/>
-                            </connections>
-                        </barButtonItem>
+                        <barButtonItem key="rightBarButtonItem" title="Готово" id="Dgl-9z-i07"/>
                     </navigationItem>
                     <simulatedToolbarMetrics key="simulatedBottomBarMetrics"/>
-                    <connections>
-                        <outlet property="textView" destination="nXI-HM-jos" id="Kkq-16-pr3"/>
-                        <outlet property="titleNotes" destination="jwL-HK-QcK" id="VIL-kt-uxs"/>
-                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
