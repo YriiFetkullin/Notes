@@ -12,6 +12,7 @@
 		7C43C04D27EE07B600BF1F51 /* NoteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C43C04C27EE07B600BF1F51 /* NoteViewController.swift */; };
 		7C43C05227EE07B800BF1F51 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7C43C05127EE07B800BF1F51 /* Assets.xcassets */; };
 		7C43C05527EE07B800BF1F51 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7C43C05327EE07B800BF1F51 /* LaunchScreen.storyboard */; };
+		7C616E1E27FDC6250048054D /* NotesModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C616E1D27FDC6250048054D /* NotesModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +23,7 @@
 		7C43C05127EE07B800BF1F51 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7C43C05427EE07B800BF1F51 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		7C43C05627EE07B800BF1F51 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		7C616E1D27FDC6250048054D /* NotesModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +59,7 @@
 				7C43C04827EE07B600BF1F51 /* AppDelegate.swift */,
 				7C43C04A27EE07B600BF1F51 /* SceneDelegate.swift */,
 				7C43C04C27EE07B600BF1F51 /* NoteViewController.swift */,
+				7C616E1D27FDC6250048054D /* NotesModel.swift */,
 				7C43C05127EE07B800BF1F51 /* Assets.xcassets */,
 				7C43C05327EE07B800BF1F51 /* LaunchScreen.storyboard */,
 				7C43C05627EE07B800BF1F51 /* Info.plist */,
@@ -156,6 +159,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7C43C04D27EE07B600BF1F51 /* NoteViewController.swift in Sources */,
+				7C616E1E27FDC6250048054D /* NotesModel.swift in Sources */,
 				7C43C04927EE07B600BF1F51 /* AppDelegate.swift in Sources */,
 				7C43C04B27EE07B600BF1F51 /* SceneDelegate.swift in Sources */,
 			);
