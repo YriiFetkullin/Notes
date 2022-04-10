@@ -33,10 +33,16 @@ class NoteViewController: UIViewController {
         noteDate.translatesAutoresizingMaskIntoConstraints = false
         return noteDate
     }()
+
     private var datePicker: UIDatePicker = {
         let datePicker = UIDatePicker()
-        datePicker.draw(CGRect(x: 0, y: 0, width: 30, height: 40))
         return datePicker
+    }()
+
+    private let formatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "d MMMM yyyy"
+        return formatter
     }()
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -63,11 +69,13 @@ class NoteViewController: UIViewController {
         dateField.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor, constant: 20).isActive = true
         dateField.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor, constant: -20).isActive = true
         dateField.bottomAnchor.constraint(equalTo: textView.topAnchor, constant: -16).isActive = true
-        dateField.placeholder = "Текущая дата"
+        let dateString = formatter.string(from: Date())
+        dateField.placeholder = dateString
+        dateField.text = defaults.string(forKey: "date")
         datePicker.datePickerMode = .date
         datePicker.addTarget(self, action: #selector(self.dateChanged), for: .allEvents)
         dateField.inputView = datePicker
-        datePicker.datePickerMode = .date
+        datePicker.preferredDatePickerStyle = .wheels
         let localeID = Locale.preferredLanguages.first
         datePicker.locale = Locale(identifier: localeID!)
 
@@ -75,14 +83,16 @@ class NoteViewController: UIViewController {
         barButton.target = nil
         barButton.action = #selector(barButtonTapped(_:))
     }
+
     func getDateFromPicker() {
-        let formatter = DateFormatter()
         formatter.dateFormat = "d MMMM yyyy"
         dateField.text = formatter.string(from: datePicker.date)
     }
+
     @objc func dateChanged() {
         getDateFromPicker()
     }
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         registerForKeyboardNotifications()
@@ -126,19 +136,20 @@ class NoteViewController: UIViewController {
 
     @objc func barButtonTapped(_ sender: UIBarButtonItem) {
         view.endEditing(true)
-        let notes = textView.text!
-        let title = titleField.text!
-        let date = dateField.text!
-
-        if !notes.isEmpty && !title.isEmpty && !date.isEmpty {
-            defaults.set(notes, forKey: "notes")
-            defaults.set(title, forKey: "title")
-            defaults.set(date, forKey: "date")
+        let model = NotesModel(
+            title: titleField.text,
+            notes: textView.text,
+            date: dateField.text
+        )
+        if !model.isEmpty, let encoded = try? JSONEncoder().encode(model) {
+            defaults.set(encoded, forKey: "notesModel")
             textView.resignFirstResponder()
             titleField.resignFirstResponder()
             dateField.resignFirstResponder()
+        } else {
         }
     }
+
     func configureElements(model: NotesModel) {
         titleField.text = model.title
         textView.text = model.notes
