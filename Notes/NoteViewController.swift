@@ -44,10 +44,10 @@ class NoteViewController: UIViewController {
         formatter.dateFormat = "d MMMM yyyy"
         return formatter
     }()
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        textView.text = defaults.string(forKey: "notes")
         if textView.canBecomeFirstResponder {
             textView.becomeFirstResponder()
         }
@@ -58,7 +58,6 @@ class NoteViewController: UIViewController {
         textView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor, constant: -20).isActive = true
 
         titleField.placeholder = "Введите заголовок"
-        titleField.text = defaults.string(forKey: "title")
         view.addSubview(titleField)
         titleField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20).isActive = true
         titleField.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor, constant: 20).isActive = true
@@ -71,7 +70,7 @@ class NoteViewController: UIViewController {
         dateField.bottomAnchor.constraint(equalTo: textView.topAnchor, constant: -16).isActive = true
         let dateString = formatter.string(from: Date())
         dateField.placeholder = dateString
-        dateField.text = defaults.string(forKey: "date")
+
         datePicker.datePickerMode = .date
         datePicker.addTarget(self, action: #selector(self.dateChanged), for: .allEvents)
         dateField.inputView = datePicker
@@ -147,12 +146,24 @@ class NoteViewController: UIViewController {
             titleField.resignFirstResponder()
             dateField.resignFirstResponder()
         } else {
+            showAlert()
         }
     }
-
     func configureElements(model: NotesModel) {
         titleField.text = model.title
         textView.text = model.notes
         dateField.text = model.date
+    }
+
+    private func showAlert() {
+        let alert = UIAlertController(
+            title: "Внимание",
+            message: "Ваша заметка пуста,хотите продолжить?",
+            preferredStyle: .alert
+        )
+        let okButton = UIAlertAction(title: "OK", style: .default, handler: nil)
+        alert.addAction(okButton)
+
+        present(alert, animated: true, completion: nil)
     }
 }
