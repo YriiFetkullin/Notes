@@ -10,11 +10,11 @@ import UIKit
 
 struct NotesModel: Codable {
     var title: String?
-    var notes: String?
+    var text: String?
     var date: String?
     var isEmpty: Bool {
         guard let title = title,
-              let notes = notes,
+              let notes = text,
               let date = date else {
             return false
         }

@@ -17,13 +17,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     ) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         window = UIWindow(windowScene: windowScene)
-        let screen = NoteViewController()
-        if let notesModel = UserDefaults.standard.object(forKey: "notesModel") as? Data {
-            if let note = try? JSONDecoder().decode(NotesModel.self, from: notesModel) {
-                screen.configureElements(model: note)
-            }
-        }
-        window?.rootViewController = UINavigationController(rootViewController: screen)
+        let viewController = ListNotesViewController()
+        let navigationController = UINavigationController(rootViewController: viewController)
+        window?.rootViewController = navigationController
         window?.makeKeyAndVisible()
     }
 

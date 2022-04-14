@@ -10,35 +10,9 @@ import UIKit
 class NoteViewController: UIViewController {
     let defaults = UserDefaults.standard
 
-    private let barButton: UIBarButtonItem = {
-        let barButton = UIBarButtonItem()
-        barButton.title = "Готово"
-        return barButton
-    }()
-
-    private let textView: UITextView = {
-        let textNotes = UITextView()
-        textNotes.translatesAutoresizingMaskIntoConstraints = false
-        return textNotes
-    }()
-
-    private let titleField: UITextField = {
-        let notes = UITextField()
-        notes.translatesAutoresizingMaskIntoConstraints = false
-        return notes
-    }()
-
-    private let dateField: UITextField = {
-        let noteDate = UITextField()
-        noteDate.translatesAutoresizingMaskIntoConstraints = false
-        return noteDate
-    }()
-
-    private var datePicker: UIDatePicker = {
-        let datePicker = UIDatePicker()
-        return datePicker
-    }()
-
+    private let textView = UITextView().prepateForAutoLayout()
+    private let titleField = UITextField().prepateForAutoLayout()
+    private let dateField = UILabel().prepateForAutoLayout()
     private let formatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "d MMMM yyyy"
@@ -47,7 +21,15 @@ class NoteViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .systemGray6
+
+        let barButton = UIBarButtonItem(
+            title: "Готово",
+            style: .done,
+            target: nil,
+            action: #selector(barButtonTapped)
+        )
+
         if textView.canBecomeFirstResponder {
             textView.becomeFirstResponder()
         }
@@ -57,39 +39,22 @@ class NoteViewController: UIViewController {
         textView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor, constant: 20).isActive = true
         textView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor, constant: -20).isActive = true
 
-        titleField.placeholder = "Введите заголовок"
+        titleField.placeholder = "Введите название"
+        titleField.borderStyle = .none
+
         view.addSubview(titleField)
-        titleField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20).isActive = true
         titleField.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor, constant: 20).isActive = true
         titleField.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor, constant: -20).isActive = true
-        view.addSubview(dateField)
+        titleField.bottomAnchor.constraint(equalTo: textView.topAnchor, constant: -16).isActive = true
 
-        dateField.topAnchor.constraint(equalTo: titleField.bottomAnchor, constant: 16).isActive = true
+        view.addSubview(dateField)
+        dateField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16).isActive = true
         dateField.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor, constant: 20).isActive = true
         dateField.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor, constant: -20).isActive = true
-        dateField.bottomAnchor.constraint(equalTo: textView.topAnchor, constant: -16).isActive = true
-        let dateString = formatter.string(from: Date())
-        dateField.placeholder = dateString
-
-        datePicker.datePickerMode = .date
-        datePicker.addTarget(self, action: #selector(self.dateChanged), for: .allEvents)
-        dateField.inputView = datePicker
-        datePicker.preferredDatePickerStyle = .wheels
-        let localeID = Locale.preferredLanguages.first
-        datePicker.locale = Locale(identifier: localeID!)
+        dateField.bottomAnchor.constraint(equalTo: titleField.topAnchor, constant: -12).isActive = true
+        dateField.textAlignment = .center
 
         navigationItem.rightBarButtonItem = barButton
-        barButton.target = nil
-        barButton.action = #selector(barButtonTapped(_:))
-    }
-
-    func getDateFromPicker() {
-        formatter.dateFormat = "d MMMM yyyy"
-        dateField.text = formatter.string(from: datePicker.date)
-    }
-
-    @objc func dateChanged() {
-        getDateFromPicker()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -137,7 +102,7 @@ class NoteViewController: UIViewController {
         view.endEditing(true)
         let model = NotesModel(
             title: titleField.text,
-            notes: textView.text,
+            text: textView.text,
             date: dateField.text
         )
         if !model.isEmpty, let encoded = try? JSONEncoder().encode(model) {
@@ -151,7 +116,7 @@ class NoteViewController: UIViewController {
     }
     func configureElements(model: NotesModel) {
         titleField.text = model.title
-        textView.text = model.notes
+        textView.text = model.text
         dateField.text = model.date
     }
 
