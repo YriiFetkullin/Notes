@@ -11,11 +11,24 @@ import UIKit
 class ListNotesViewController: UIViewController {
     private let scrollView = UIScrollView().prepateForAutoLayout()
     private let stackView = UIStackView().prepateForAutoLayout()
+
+    private var notes: [NotesModel]
+
+    init(notes: [NotesModel]) {
+        self.notes = notes
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemGray6
 
         setupUI()
+        setupNotes()
     }
     private func setupUI() {
         navigationItem.title = "Заметки"
@@ -35,21 +48,28 @@ class ListNotesViewController: UIViewController {
         stackView.rightAnchor.constraint(equalTo: scrollView.rightAnchor).isActive = true
         stackView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor).isActive = true
         stackView.widthAnchor.constraint(equalTo: scrollView.widthAnchor).isActive = true
+    }
 
-        let model = NotesModel(
-            title: "Заметка",
-            text: "Какой-то очень длинный текст бла бла бла бла бла бла бла бла",
-            date: Date().description
-        )
-        for _ in 1...6 {
+    private func setupNotes() {
+        stackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        notes.forEach { note in
             let card = NoteCardView()
-            card.model = model
+            card.model = note
             card.callback = { [weak self] model in
                 let noteViewController = NoteViewController()
+                noteViewController.delegate = self
                 noteViewController.configureElements(model: model)
                 self?.navigationController?.pushViewController(noteViewController, animated: true)
             }
             stackView.addArrangedSubview(card)
         }
+    }
+}
+
+extension ListNotesViewController: NoteViewControllerDelegate {
+    func updateNote(noteModel: NotesModel) {
+        guard let index = notes.firstIndex(where: { $0.id == noteModel.id }) else { return }
+        notes[index] = noteModel
+        setupNotes()
     }
 }

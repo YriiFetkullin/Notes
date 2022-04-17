@@ -6,18 +6,22 @@
 //
 
 import UIKit
+protocol NoteViewControllerDelegate: AnyObject {
+    func updateNote(noteModel: NotesModel)
+}
 
 class NoteViewController: UIViewController {
-    let defaults = UserDefaults.standard
-
     private let textView = UITextView().prepateForAutoLayout()
     private let titleField = UITextField().prepateForAutoLayout()
-    private let dateField = UILabel().prepateForAutoLayout()
+    private let dateLabel = UILabel().prepateForAutoLayout()
     private let formatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateFormat = "d MMMM yyyy"
+        formatter.dateFormat = "dd.MM.yyyy EEEE HH:mm"
+        formatter.locale = Locale(identifier: "ru_RU")
         return formatter
     }()
+    private var model: NotesModel?
+    weak var delegate: NoteViewControllerDelegate?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -47,12 +51,12 @@ class NoteViewController: UIViewController {
         titleField.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor, constant: -20).isActive = true
         titleField.bottomAnchor.constraint(equalTo: textView.topAnchor, constant: -16).isActive = true
 
-        view.addSubview(dateField)
-        dateField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16).isActive = true
-        dateField.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor, constant: 20).isActive = true
-        dateField.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor, constant: -20).isActive = true
-        dateField.bottomAnchor.constraint(equalTo: titleField.topAnchor, constant: -12).isActive = true
-        dateField.textAlignment = .center
+        view.addSubview(dateLabel)
+        dateLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16).isActive = true
+        dateLabel.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor, constant: 20).isActive = true
+        dateLabel.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor, constant: -20).isActive = true
+        dateLabel.bottomAnchor.constraint(equalTo: titleField.topAnchor, constant: -12).isActive = true
+        dateLabel.textAlignment = .center
 
         navigationItem.rightBarButtonItem = barButton
     }
@@ -60,6 +64,12 @@ class NoteViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         registerForKeyboardNotifications()
+    }
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        if let model = model {
+            delegate?.updateNote(noteModel: model)
+        }
     }
 
     override func viewDidDisappear(_ animated: Bool) {
@@ -100,24 +110,27 @@ class NoteViewController: UIViewController {
 
     @objc func barButtonTapped(_ sender: UIBarButtonItem) {
         view.endEditing(true)
+        guard let id = model?.id else { return }
         let model = NotesModel(
+            id: id,
             title: titleField.text,
             text: textView.text,
-            date: dateField.text
+            date: Date()
         )
         if !model.isEmpty, let encoded = try? JSONEncoder().encode(model) {
-            defaults.set(encoded, forKey: "notesModel")
+            self.model = model
+            dateLabel.text = formatter.string(from: model.date)
             textView.resignFirstResponder()
             titleField.resignFirstResponder()
-            dateField.resignFirstResponder()
         } else {
             showAlert()
         }
     }
     func configureElements(model: NotesModel) {
+        self.model = model
         titleField.text = model.title
         textView.text = model.text
-        dateField.text = model.date
+        dateLabel.text = formatter.string(from: model.date)
     }
 
     private func showAlert() {

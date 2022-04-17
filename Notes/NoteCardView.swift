@@ -13,22 +13,21 @@ class NoteCardView: UIView {
     private let titleview = UILabel().prepateForAutoLayout()
     private let subtitleView = UILabel().prepateForAutoLayout()
     private var dateView = UILabel().prepateForAutoLayout()
+    private let formatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd.MM.yyyy"
+        return formatter
+    }()
 
     var callback: ((NotesModel) -> Void)?
     let date = Date()
-
-    let formatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "dd.mm.yyyy"
-        return formatter
-    }()
 
     var model: NotesModel? {
         didSet {
             guard let model = model else { return }
             titleview.text = model.title
             subtitleView.text = model.text
-            dateView.text = model.date
+            dateView.text = formatter.string(from: model.date)
         }
     }
     init() {
