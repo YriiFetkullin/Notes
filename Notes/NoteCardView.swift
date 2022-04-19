@@ -20,7 +20,6 @@ class NoteCardView: UIView {
     }()
 
     var callback: ((NotesModel) -> Void)?
-    let date = Date()
 
     var model: NotesModel? {
         didSet {

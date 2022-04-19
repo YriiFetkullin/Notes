@@ -11,8 +11,9 @@ import UIKit
 class ListNotesViewController: UIViewController {
     private let scrollView = UIScrollView().prepateForAutoLayout()
     private let stackView = UIStackView().prepateForAutoLayout()
-
+    private let addNote = UIButton(type: .custom).prepateForAutoLayout()
     private var notes: [NotesModel]
+    var callback: ((NotesModel) -> Void)?
 
     init(notes: [NotesModel]) {
         self.notes = notes
@@ -27,9 +28,12 @@ class ListNotesViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemGray6
 
+        let imageButton = UIImage(named: "button")
+        addNote.setImage(imageButton, for: .normal)
         setupUI()
         setupNotes()
     }
+
     private func setupUI() {
         navigationItem.title = "Заметки"
 
@@ -48,6 +52,12 @@ class ListNotesViewController: UIViewController {
         stackView.rightAnchor.constraint(equalTo: scrollView.rightAnchor).isActive = true
         stackView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor).isActive = true
         stackView.widthAnchor.constraint(equalTo: scrollView.widthAnchor).isActive = true
+
+        scrollView.addSubview(addNote)
+        addNote.topAnchor.constraint(equalTo: view.topAnchor, constant: 734).isActive = true
+        addNote.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 321).isActive = true
+        addNote.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -60).isActive = true
+        addNote.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -19).isActive = true
     }
 
     private func setupNotes() {
@@ -64,7 +74,7 @@ class ListNotesViewController: UIViewController {
             stackView.addArrangedSubview(card)
         }
     }
-}
+    }
 
 extension ListNotesViewController: NoteViewControllerDelegate {
     func updateNote(noteModel: NotesModel) {
