@@ -7,13 +7,20 @@
 
 import UIKit
 protocol NoteViewControllerDelegate: AnyObject {
-    func updateNote(noteModel: NotesModel)
+    func updateNote(index: Int, noteModel: NotesModel)
+    func appendNote(noteModel: NotesModel)
 }
 
 class NoteViewController: UIViewController {
     private let textView = UITextView().prepateForAutoLayout()
     private let titleField = UITextField().prepateForAutoLayout()
     private let dateLabel = UILabel().prepateForAutoLayout()
+    private let barButton = UIBarButtonItem(
+        title: "Готово",
+        style: .done,
+        target: nil,
+        action: #selector(barButtonTapped)
+    )
     private let formatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "dd.MM.yyyy EEEE HH:mm"
@@ -22,17 +29,12 @@ class NoteViewController: UIViewController {
     }()
     private var model: NotesModel?
     weak var delegate: NoteViewControllerDelegate?
+    var noteIndex: Int?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemGray6
-
-        let barButton = UIBarButtonItem(
-            title: "Готово",
-            style: .done,
-            target: nil,
-            action: #selector(barButtonTapped)
-        )
+        setupStyles()
 
         if textView.canBecomeFirstResponder {
             textView.becomeFirstResponder()
@@ -57,8 +59,14 @@ class NoteViewController: UIViewController {
         dateLabel.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor, constant: -20).isActive = true
         dateLabel.bottomAnchor.constraint(equalTo: titleField.topAnchor, constant: -12).isActive = true
         dateLabel.textAlignment = .center
+    }
 
-        navigationItem.rightBarButtonItem = barButton
+    private func setupStyles() {
+        titleField.font = .systemFont(ofSize: 24, weight: .medium)
+        textView.font = .systemFont(ofSize: 16, weight: .regular)
+        textView.backgroundColor = .systemGray6
+        dateLabel.font = .systemFont(ofSize: 14, weight: .medium)
+        dateLabel.textColor = .systemGray3
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -67,8 +75,11 @@ class NoteViewController: UIViewController {
     }
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        if let model = model {
-            delegate?.updateNote(noteModel: model)
+        guard let model = model else { return }
+        if let index = noteIndex {
+            delegate?.updateNote(index: index, noteModel: model)
+        } else {
+            delegate?.appendNote(noteModel: model)
         }
     }
 
@@ -102,22 +113,22 @@ class NoteViewController: UIViewController {
         guard let infoKey = userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else { return }
         let keyboardFrameSize = infoKey.cgRectValue
         textView.contentInset.bottom = keyboardFrameSize.height
+        navigationItem.rightBarButtonItem = barButton
     }
 
     @objc func keyboardWillHide() {
+        navigationItem.rightBarButtonItem = nil
         textView.contentInset.bottom = CGFloat.zero
     }
 
     @objc func barButtonTapped(_ sender: UIBarButtonItem) {
         view.endEditing(true)
-        guard let id = model?.id else { return }
         let model = NotesModel(
-            id: id,
             title: titleField.text,
             text: textView.text,
             date: Date()
         )
-        if !model.isEmpty, let encoded = try? JSONEncoder().encode(model) {
+        if !model.isEmpty {
             self.model = model
             dateLabel.text = formatter.string(from: model.date)
             textView.resignFirstResponder()

@@ -13,7 +13,6 @@ class ListNotesViewController: UIViewController {
     private let stackView = UIStackView().prepateForAutoLayout()
     private let addNote = UIButton(type: .custom).prepateForAutoLayout()
     private var notes: [NotesModel]
-    var callback: ((NotesModel) -> Void)?
 
     init(notes: [NotesModel]) {
         self.notes = notes
@@ -28,8 +27,7 @@ class ListNotesViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemGray6
 
-        let imageButton = UIImage(named: "button")
-        addNote.setImage(imageButton, for: .normal)
+        setupButton()
         setupUI()
         setupNotes()
     }
@@ -60,25 +58,45 @@ class ListNotesViewController: UIViewController {
         addNote.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -19).isActive = true
     }
 
+    private func setupButton() {
+        let imageButton = UIImage(named: "button")
+        addNote.setImage(imageButton, for: .normal)
+        addNote.addTarget(self, action: #selector(cardTapped), for: .touchUpInside)
+    }
+
     private func setupNotes() {
         stackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        notes.forEach { note in
+        notes.enumerated().forEach { (index, note) in
             let card = NoteCardView()
             card.model = note
             card.callback = { [weak self] model in
                 let noteViewController = NoteViewController()
                 noteViewController.delegate = self
+                noteViewController.noteIndex = index
                 noteViewController.configureElements(model: model)
                 self?.navigationController?.pushViewController(noteViewController, animated: true)
             }
             stackView.addArrangedSubview(card)
         }
     }
+
+    @objc
+    private func cardTapped() {
+        let noteViewController = NoteViewController()
+        noteViewController.delegate = self
+        let model = NotesModel(title: "", text: "", date: Date())
+        noteViewController.configureElements(model: model)
+        navigationController?.pushViewController(noteViewController, animated: true)
     }
+}
 
 extension ListNotesViewController: NoteViewControllerDelegate {
-    func updateNote(noteModel: NotesModel) {
-        guard let index = notes.firstIndex(where: { $0.id == noteModel.id }) else { return }
+    func appendNote(noteModel: NotesModel) {
+        notes.insert(noteModel, at: 0)
+        setupNotes()
+    }
+
+    func updateNote(index: Int, noteModel: NotesModel) {
         notes[index] = noteModel
         setupNotes()
     }
