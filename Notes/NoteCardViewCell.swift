@@ -1,5 +1,5 @@
 //
-//  NoteCardView.swift
+//  NoteCardViewCell.swift
 //  Notes
 //
 //  Created by NarkoDiller on 13.04.2022.
@@ -8,7 +8,7 @@
 import Foundation
 import UIKit
 
-class NoteCardView: UIView {
+class NoteCardViewCell: UITableViewCell {
     private let cardView = UIView().prepateForAutoLayout()
     private let titleview = UILabel().prepateForAutoLayout()
     private let subtitleView = UILabel().prepateForAutoLayout()
@@ -29,8 +29,8 @@ class NoteCardView: UIView {
             dateView.text = formatter.string(from: model.date)
         }
     }
-    init() {
-        super.init(frame: .zero)
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
         commonInit()
         setupStyles()
         addRecognizer()
@@ -73,6 +73,8 @@ class NoteCardView: UIView {
         subtitleView.font = .systemFont(ofSize: 10, weight: .medium)
         subtitleView.textColor = .systemGray3
         dateView.font = .systemFont(ofSize: 10, weight: .medium)
+        backgroundColor = .clear
+        selectionStyle = .none
     }
 
     private func addRecognizer() {
