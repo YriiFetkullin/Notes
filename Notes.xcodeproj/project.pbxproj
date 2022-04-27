@@ -14,7 +14,7 @@
 		7C43C05527EE07B800BF1F51 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7C43C05327EE07B800BF1F51 /* LaunchScreen.storyboard */; };
 		7C616E1E27FDC6250048054D /* NotesModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C616E1D27FDC6250048054D /* NotesModel.swift */; };
 		7C616E2028071DDD0048054D /* ListNotesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C616E1F28071DDD0048054D /* ListNotesViewController.swift */; };
-		7C616E222807205D0048054D /* NoteCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C616E212807205D0048054D /* NoteCardView.swift */; };
+		7C616E222807205D0048054D /* NoteCardViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C616E212807205D0048054D /* NoteCardViewCell.swift */; };
 		7C616E242807228E0048054D /* UIView+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C616E232807228E0048054D /* UIView+Extension.swift */; };
 /* End PBXBuildFile section */
 
@@ -28,7 +28,7 @@
 		7C43C05627EE07B800BF1F51 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7C616E1D27FDC6250048054D /* NotesModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesModel.swift; sourceTree = "<group>"; };
 		7C616E1F28071DDD0048054D /* ListNotesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListNotesViewController.swift; sourceTree = "<group>"; };
-		7C616E212807205D0048054D /* NoteCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteCardView.swift; sourceTree = "<group>"; };
+		7C616E212807205D0048054D /* NoteCardViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteCardViewCell.swift; sourceTree = "<group>"; };
 		7C616E232807228E0048054D /* UIView+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+Extension.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -65,7 +65,7 @@
 				7C43C04827EE07B600BF1F51 /* AppDelegate.swift */,
 				7C43C04A27EE07B600BF1F51 /* SceneDelegate.swift */,
 				7C616E1F28071DDD0048054D /* ListNotesViewController.swift */,
-				7C616E212807205D0048054D /* NoteCardView.swift */,
+				7C616E212807205D0048054D /* NoteCardViewCell.swift */,
 				7C43C04C27EE07B600BF1F51 /* NoteViewController.swift */,
 				7C616E1D27FDC6250048054D /* NotesModel.swift */,
 				7C616E232807228E0048054D /* UIView+Extension.swift */,
@@ -172,7 +172,7 @@
 				7C616E2028071DDD0048054D /* ListNotesViewController.swift in Sources */,
 				7C616E1E27FDC6250048054D /* NotesModel.swift in Sources */,
 				7C43C04927EE07B600BF1F51 /* AppDelegate.swift in Sources */,
-				7C616E222807205D0048054D /* NoteCardView.swift in Sources */,
+				7C616E222807205D0048054D /* NoteCardViewCell.swift in Sources */,
 				7C43C04B27EE07B600BF1F51 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
