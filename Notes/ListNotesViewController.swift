@@ -48,10 +48,10 @@ class ListNotesViewController: UIViewController {
         tableView.backgroundColor = .clear
 
         view.addSubview(addNoteButton)
-        addNoteButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 734).isActive = true
-        addNoteButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 321).isActive = true
+        addNoteButton.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        addNoteButton.heightAnchor.constraint(equalTo: addNoteButton.widthAnchor).isActive = true
         addNoteButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -60).isActive = true
-        addNoteButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -19).isActive = true
+        addNoteButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -20).isActive = true
     }
 
     private func setupButton() {
