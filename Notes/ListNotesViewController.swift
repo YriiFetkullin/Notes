@@ -12,6 +12,13 @@ class ListNotesViewController: UIViewController {
     private let tableView = UITableView().prepateForAutoLayout()
     private let addNoteButton = UIButton(type: .custom).prepateForAutoLayout()
     private var notes: [NotesModel]
+    private let chooseNote = UIBarButtonItem(
+        title: "Выбрать",
+        style: .done,
+        target: nil,
+        action: #selector(chooseNoteButtonTapped)
+    )
+    private var addNoteBottomConstraint: NSLayoutConstraint?
 
     private let noteCellIdentifier = "NoteCellIdentifier"
 
@@ -31,12 +38,16 @@ class ListNotesViewController: UIViewController {
         tableView.dataSource = self
         tableView.register(NoteCardViewCell.self, forCellReuseIdentifier: noteCellIdentifier)
 
+        chooseNote.target = self
+        addNoteButton.addTarget(self, action: #selector(actionButtonTapped), for: .touchUpInside)
         setupButton()
         setupUI()
     }
 
     private func setupUI() {
         navigationItem.title = "Заметки"
+        navigationItem.rightBarButtonItem = chooseNote
+
 
         view.addSubview(tableView)
         tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
@@ -50,23 +61,106 @@ class ListNotesViewController: UIViewController {
         view.addSubview(addNoteButton)
         addNoteButton.widthAnchor.constraint(equalToConstant: 50).isActive = true
         addNoteButton.heightAnchor.constraint(equalTo: addNoteButton.widthAnchor).isActive = true
-        addNoteButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -60).isActive = true
+        addNoteBottomConstraint = addNoteButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 60)
+        addNoteBottomConstraint?.isActive = true
         addNoteButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -20).isActive = true
     }
 
     private func setupButton() {
-        let imageButton = UIImage(named: "button")
-        addNoteButton.setImage(imageButton, for: .normal)
-        addNoteButton.addTarget(self, action: #selector(cardTapped), for: .touchUpInside)
+        if isEditing {
+            let imageButton = UIImage(named: "deleteButton")
+            addNoteButton.setImage(imageButton, for: .normal)
+        } else {
+            let imageButton = UIImage(named: "addButton")
+            addNoteButton.setImage(imageButton, for: .normal)
+        }
     }
 
-    @objc
-    private func cardTapped() {
-        let noteViewController = NoteViewController()
-        noteViewController.delegate = self
-        let model = NotesModel(title: "", text: "", date: Date())
-        noteViewController.configureElements(model: model)
-        navigationController?.pushViewController(noteViewController, animated: true)
+    @objc private func actionButtonTapped() {
+        if isEditing {
+            deleteAction()
+        } else {
+            addAction()
+        }
+    }
+
+    @objc private func chooseNoteButtonTapped() {
+        isEditing = !isEditing
+        tableView.setEditing(isEditing, animated: true)
+        setupButton()
+        if isEditing {
+            chooseNote.title = "Готово"
+        } else {
+            chooseNote.title = "Выбрать"
+        }
+    }
+
+    private func addAction() {
+        UIView.animate(
+            withDuration: 0.3,
+            delay: 0,
+            options: [.curveEaseIn]
+        ) {
+            self.addNoteBottomConstraint?.constant = -75
+            self.view.layoutIfNeeded()
+        } completion: { _ in
+            UIView.animate(
+                withDuration: 0.4,
+                delay: 0.1,
+                options: [.curveEaseOut]
+            ) {
+                self.addNoteBottomConstraint?.constant = 60
+                self.view.layoutIfNeeded()
+            } completion: { _ in
+                let noteViewController = NoteViewController()
+                noteViewController.delegate = self
+                let model = NotesModel(title: "", text: "", date: Date())
+                noteViewController.configureElements(model: model)
+                self.navigationController?.pushViewController(noteViewController, animated: true)
+            }
+        }
+    }
+
+    private func deleteAction() {
+        print("delete")
+    }
+
+    private func chooseAlert() {
+        let alert = UIAlertController(
+            title: "Внимание",
+            message: "Вы не выбрали ни одной заметки",
+            preferredStyle: .alert
+        )
+        let okButton = UIAlertAction(title: "OK", style: .default, handler: nil)
+        alert.addAction(okButton)
+
+        present(alert, animated: true, completion: nil)
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        addNoteBottomConstraint?.constant = -60
+        UIView.animate(
+            withDuration: 1,
+            delay: 1,
+            usingSpringWithDamping: 0.5,
+            initialSpringVelocity: 0.1,
+            options: [.curveEaseOut]
+        ) {
+            self.view?.layoutIfNeeded()
+        }
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        addNoteBottomConstraint?.constant = 60
+        UIView.animate(withDuration: 1) {
+            self.view?.layoutIfNeeded()
+        }
     }
 }
 
