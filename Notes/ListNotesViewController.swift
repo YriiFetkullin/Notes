@@ -40,7 +40,7 @@ class ListNotesViewController: UIViewController {
 
         chooseNote.target = self
         addNoteButton.addTarget(self, action: #selector(actionButtonTapped), for: .touchUpInside)
-        setupButton()
+        setupButton(isEditing)
         setupUI()
     }
 
@@ -48,15 +48,16 @@ class ListNotesViewController: UIViewController {
         navigationItem.title = "Заметки"
         navigationItem.rightBarButtonItem = chooseNote
 
-
         view.addSubview(tableView)
         tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
-        tableView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor).isActive = true
-        tableView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor).isActive = true
+        tableView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor, constant: 16).isActive = true
+        tableView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor, constant: -16).isActive = true
         tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
         tableView.alwaysBounceVertical = true
         tableView.separatorStyle = .none
         tableView.backgroundColor = .clear
+        tableView.allowsMultipleSelectionDuringEditing = true
+        tableView.showsVerticalScrollIndicator = false
 
         view.addSubview(addNoteButton)
         addNoteButton.widthAnchor.constraint(equalToConstant: 50).isActive = true
@@ -66,7 +67,7 @@ class ListNotesViewController: UIViewController {
         addNoteButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -20).isActive = true
     }
 
-    private func setupButton() {
+    private func setupButton(_ isEditing: Bool) {
         if isEditing {
             let imageButton = UIImage(named: "deleteButton")
             addNoteButton.setImage(imageButton, for: .normal)
@@ -85,14 +86,18 @@ class ListNotesViewController: UIViewController {
     }
 
     @objc private func chooseNoteButtonTapped() {
-        isEditing = !isEditing
-        tableView.setEditing(isEditing, animated: true)
-        setupButton()
-        if isEditing {
+        setEditing(!isEditing, animated: true)
+    }
+
+    override func setEditing(_ editing: Bool, animated: Bool) {
+        tableView.setEditing(editing, animated: true)
+        setupButton(editing)
+        if editing {
             chooseNote.title = "Готово"
         } else {
             chooseNote.title = "Выбрать"
         }
+        super.setEditing(editing, animated: animated)
     }
 
     private func addAction() {
@@ -122,7 +127,21 @@ class ListNotesViewController: UIViewController {
     }
 
     private func deleteAction() {
-        print("delete")
+        guard let selectedRows = tableView.indexPathsForSelectedRows else {
+            chooseAlert()
+            return
+        }
+
+        notes = notes.enumerated().compactMap({ index, note in
+            guard !selectedRows.contains(where: { $0.row == index }) else { return nil }
+                return note
+        })
+
+        tableView.performBatchUpdates {
+            tableView.deleteRows(at: selectedRows, with: .automatic)
+        } completion: { [weak self] _ in
+            self?.setEditing(false, animated: true)
+        }
     }
 
     private func chooseAlert() {
@@ -194,6 +213,10 @@ extension ListNotesViewController: UITableViewDataSource {
 
 extension ListNotesViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard !isEditing else {
+            return
+        }
+
         let noteViewController = NoteViewController()
         noteViewController.delegate = self
         noteViewController.noteIndex = indexPath.row
