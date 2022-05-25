@@ -21,13 +21,36 @@ class NetworkWorker: NetworkWorkerProtocol {
     }
 
     func getNotes(completion: @escaping (Result<[NotesModel], Error>) -> Void) {
-        let url = URL(string: "https://firebasestorage.googleapis.com/v0/b/ios-test-ce687.appspot.com/o/Empty.json?alt=media&token=d07f7d4a-141e-4ac5-a2d2-cc936d4e6f18")!
+        guard let url = createURLComponents() else { return }
 
-        let task = session.dataTask(with: url) { data, response, error in
+        let task = session.dataTask(with: url) { data, _, _ in
             guard let data = data else { return }
-            let json = String(data: data, encoding: .utf8)
-            print(json ?? "")
+
+            do {
+                let model = try JSONDecoder().decode([NotesModel].self, from: data)
+                DispatchQueue.main.async {
+                    completion(.success(model))
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    completion(.failure(error))
+                }
+                print(error.localizedDescription)
+            }
         }
         task.resume()
+    }
+
+    private func createURLComponents() -> URL? {
+        var urlComponents = URLComponents()
+
+        urlComponents.scheme = "https"
+        urlComponents.host = "firebasestorage.googleapis.com"
+        urlComponents.path = "/v0/b/ios-test-ce687.appspot.com/o/Empty.json"
+        urlComponents.queryItems = [
+            URLQueryItem(name: "alt", value: "media"),
+            URLQueryItem(name: "token", value: "d07f7d4a-141e-4ac5-a2d2-cc936d4e6f18")
+        ]
+        return urlComponents.url
     }
 }
