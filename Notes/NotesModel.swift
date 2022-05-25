@@ -9,12 +9,12 @@ import Foundation
 import UIKit
 
 struct NotesModel: Codable {
-    var title: String?
+    var header: String?
     var text: String?
-    var date: Date
+    var date: Date?
     var isEmpty: Bool {
         guard
-            let title = title,
+            let title = header,
             let notes = text
         else {
             return false
@@ -25,42 +25,42 @@ struct NotesModel: Codable {
     static func makeMockModels() -> [NotesModel] {
         return [
             NotesModel(
-                title: "Вопросы для интервью",
+                header: "Вопросы для интервью",
                 text: "Как давно ты стал программистом?(спросить как вообще заинтересовался программирование?)",
                 date: Date()
             ),
             NotesModel(
-                title: "Диплом",
+                header: "Диплом",
                 text: "Тема диплома: проэкт помещения для шиномонтажа с расстановкой оборудования",
                 date: Date()
             ),
             NotesModel(
-                title: "Покупки",
+                header: "Покупки",
                 text: "1.Хлеб, 2.Овощи, 3.Фрукты, 4.Сыр, 5.Молоко, 6.Имбирь",
                 date: Date()
             ),
             NotesModel(
-                title: "Затраты в месяц",
+                header: "Затраты в месяц",
                 text: "Аренда - 14к, мобильная связь,интернет,ТВ - 800р",
                 date: Date()
             ),
             NotesModel(
-                title: "Заметка",
+                header: "Заметка",
                 text: "17,18 апреля",
                 date: Date()
             ),
             NotesModel(
-                title: "Позвонить",
+                header: "Позвонить",
                 text: "Стоматология allDent",
                 date: Date()
             ),
             NotesModel(
-                title: "Гибдд",
+                header: "Гибдд",
                 text: "проверить регистрацию",
                 date: Date()
             ),
             NotesModel(
-                title: "Счетчики",
+                header: "Счетчики",
                 text: "Отправить показания",
                 date: Date()
             )

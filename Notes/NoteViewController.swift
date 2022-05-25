@@ -125,13 +125,15 @@ class NoteViewController: UIViewController {
     @objc func barButtonTapped(_ sender: UIBarButtonItem) {
         view.endEditing(true)
         let model = NotesModel(
-            title: titleField.text,
+            header: titleField.text,
             text: textView.text,
             date: Date()
         )
         if !model.isEmpty {
             self.model = model
-            dateLabel.text = formatter.string(from: model.date)
+            if let date = model.date {
+                dateLabel.text = formatter.string(from: date)
+            }
             textView.resignFirstResponder()
             titleField.resignFirstResponder()
         } else {
@@ -140,9 +142,11 @@ class NoteViewController: UIViewController {
     }
     func configureElements(model: NotesModel) {
         self.model = model
-        titleField.text = model.title
+        titleField.text = model.header
         textView.text = model.text
-        dateLabel.text = formatter.string(from: model.date)
+        if let date = model.date {
+            dateLabel.text = formatter.string(from: date)
+        }
     }
 
     private func showAlert() {

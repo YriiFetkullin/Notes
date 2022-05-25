@@ -9,9 +9,10 @@ import Foundation
 import UIKit
 
 class ListNotesViewController: UIViewController {
+    private let networkWorker: NetworkWorkerProtocol
     private let tableView = UITableView().prepateForAutoLayout()
     private let addNoteButton = UIButton(type: .custom).prepateForAutoLayout()
-    private var notes: [NotesModel]
+    private var notes: [NotesModel] = []
     private let chooseNote = UIBarButtonItem(
         title: "Выбрать",
         style: .done,
@@ -22,8 +23,8 @@ class ListNotesViewController: UIViewController {
 
     private let noteCellIdentifier = "NoteCellIdentifier"
 
-    init(notes: [NotesModel]) {
-        self.notes = notes
+    init(networkWorker: NetworkWorkerProtocol) {
+        self.networkWorker = networkWorker
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -42,6 +43,20 @@ class ListNotesViewController: UIViewController {
         addNoteButton.addTarget(self, action: #selector(actionButtonTapped), for: .touchUpInside)
         setupButton(isEditing)
         setupUI()
+        fetchNotes()
+    }
+
+    private func fetchNotes() {
+        networkWorker.getNotes { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let model):
+                self.notes = model
+                self.tableView.reloadData()
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
     }
 
     private func setupUI() {
@@ -119,7 +134,7 @@ class ListNotesViewController: UIViewController {
             } completion: { _ in
                 let noteViewController = NoteViewController()
                 noteViewController.delegate = self
-                let model = NotesModel(title: "", text: "", date: Date())
+                let model = NotesModel(header: "", text: "", date: Date())
                 noteViewController.configureElements(model: model)
                 self.navigationController?.pushViewController(noteViewController, animated: true)
             }

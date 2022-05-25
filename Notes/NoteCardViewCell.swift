@@ -24,9 +24,11 @@ class NoteCardViewCell: UITableViewCell {
     var model: NotesModel? {
         didSet {
             guard let model = model else { return }
-            titleview.text = model.title
+            titleview.text = model.header
             subtitleView.text = model.text
-            dateView.text = formatter.string(from: model.date)
+            if let date = model.date {
+                dateView.text = formatter.string(from: date)
+            }
         }
     }
 
@@ -36,7 +38,7 @@ class NoteCardViewCell: UITableViewCell {
         subtitleView.text = nil
         dateView.text = nil
     }
-    
+
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupStyles()
