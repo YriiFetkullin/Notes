@@ -29,7 +29,21 @@ class NoteViewController: UIViewController {
     }()
     private var model: NotesModel?
     weak var delegate: NoteViewControllerDelegate?
+    //  чтобы не было цикла сильных ссылок
     var noteIndex: Int?
+
+    init() {
+        super.init(nibName: nil, bundle: nil)
+        print("init NoteViewController")
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    deinit {
+        print("deinit NoteViewController")
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
