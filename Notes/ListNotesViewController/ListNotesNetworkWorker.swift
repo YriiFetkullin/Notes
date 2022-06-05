@@ -1,5 +1,5 @@
 //
-//  NetworkWorker.swift
+//  ListNotesNetworkWorker.swift
 //  Notes
 //
 //  Created by NarkoDiller on 22.05.2022.
@@ -8,11 +8,7 @@
 import Foundation
 import UIKit
 
-protocol NetworkWorkerProtocol {
-    func getNotes(completion: @escaping (Result<[NotesModel], Error>) -> Void)
-}
-
-class NetworkWorker: NetworkWorkerProtocol {
+class ListNotesNetworkWorker: ListNotesWorkerLogic {
     let session: URLSession
 
     init(session: URLSession = URLSession(configuration: .default)) {
