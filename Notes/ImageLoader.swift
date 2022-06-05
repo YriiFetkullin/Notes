@@ -14,18 +14,7 @@ class ImageLoader {
             completion(.failure("Неверный URL"))
             return
         }
-//        DispatchQueue.global().async {
-//            do {
-//                let data = try Data(contentsOf: url)
-//                guard let image = UIImage(data: data) else {
-//                    completion(.failure("Нет данных"))
-//                    return
-//                }
-//                completion(.success(image))
-//            } catch {
-//                completion(.failure(error.localizedDescription))
-//            }
-//        }
+
         let task = URLSession.shared.dataTask(with: url) { data, _, error in
             if let error = error {
                 completion(.failure(error))
