@@ -47,7 +47,15 @@ class ListNotesViewController: UIViewController {
     }
 
     private func fetchNotes() {
+        let activityIndicator = UIActivityIndicatorView().prepateForAutoLayout()
+        view.addSubview(activityIndicator)
+        activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+        activityIndicator.startAnimating()
         networkWorker.getNotes { [weak self] result in
+            // чтобы не было цикла сильных ссылок
+            activityIndicator.stopAnimating()
+            activityIndicator.removeFromSuperview()
             guard let self = self else { return }
             switch result {
             case .success(let model):
@@ -121,17 +129,21 @@ class ListNotesViewController: UIViewController {
             delay: 0,
             options: [.curveEaseIn]
         ) {
+            // блоки анимации выполняются всегда
             self.addNoteBottomConstraint?.constant = -75
             self.view.layoutIfNeeded()
         } completion: { _ in
+            // блоки анимации выполняются всегда
             UIView.animate(
                 withDuration: 0.4,
                 delay: 0.1,
                 options: [.curveEaseOut]
             ) {
+                // блоки анимации выполняются всегда
                 self.addNoteBottomConstraint?.constant = 60
                 self.view.layoutIfNeeded()
             } completion: { _ in
+                // блоки анимации выполняются всегда
                 let noteViewController = NoteViewController()
                 noteViewController.delegate = self
                 let model = NotesModel(header: "", text: "", date: Date())
@@ -155,6 +167,7 @@ class ListNotesViewController: UIViewController {
         tableView.performBatchUpdates {
             tableView.deleteRows(at: selectedRows, with: .automatic)
         } completion: { [weak self] _ in
+            //  чтобы не было цикла сильных ссылок
             self?.setEditing(false, animated: true)
         }
     }
@@ -185,6 +198,7 @@ class ListNotesViewController: UIViewController {
             initialSpringVelocity: 0.1,
             options: [.curveEaseOut]
         ) {
+            // блоки анимации выполняются всегда
             self.view?.layoutIfNeeded()
         }
     }
@@ -193,6 +207,7 @@ class ListNotesViewController: UIViewController {
         super.viewWillDisappear(animated)
         addNoteBottomConstraint?.constant = 60
         UIView.animate(withDuration: 1) {
+            // блоки анимации выполняются всегда
             self.view?.layoutIfNeeded()
         }
     }

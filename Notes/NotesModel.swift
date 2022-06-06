@@ -12,6 +12,7 @@ struct NotesModel: Codable {
     var header: String?
     var text: String?
     var date: Date?
+    var userShareIcon: String?
     var isEmpty: Bool {
         guard
             let title = header,
