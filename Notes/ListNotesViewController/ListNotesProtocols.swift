@@ -41,4 +41,5 @@ protocol ListNotesDisplayLogic: AnyObject {
 }
 
 protocol ListNotesRoutingLogic {
+    func routeToNote(index: Int?, note: NotesModel, delegate: NoteViewControllerDelegate)
 }

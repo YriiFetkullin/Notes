@@ -152,11 +152,8 @@ class ListNotesViewController: UIViewController, ListNotesDisplayLogic {
                 self.view.layoutIfNeeded()
             } completion: { _ in
                 // блоки анимации выполняются всегда
-                let noteViewController = NoteViewController()
-                noteViewController.delegate = self
                 let model = NotesModel(header: "", text: "", date: Date())
-                noteViewController.configureElements(model: model)
-                self.navigationController?.pushViewController(noteViewController, animated: true)
+                self.router?.routeToNote(index: nil, note: model, delegate: self)
             }
         }
     }
@@ -215,13 +212,11 @@ extension ListNotesViewController: NoteViewControllerDelegate {
     func appendNote(noteModel: NotesModel) {
         let request = ListNotesModels.Append.Request(noteModel: noteModel)
         interactor?.appendNote(request)
-        tableView.reloadData()
     }
 
     func updateNote(index: Int, noteModel: NotesModel) {
         let request = ListNotesModels.Update.Request(index: index, noteModel: noteModel)
         interactor?.updateNote(request)
-        tableView.reloadData()
     }
 }
 
@@ -251,11 +246,6 @@ extension ListNotesViewController: UITableViewDelegate {
         else {
             return
         }
-
-        let noteViewController = NoteViewController()
-        noteViewController.delegate = self
-        noteViewController.noteIndex = indexPath.row
-        noteViewController.configureElements(model: model)
-        navigationController?.pushViewController(noteViewController, animated: true)
+        router?.routeToNote(index: indexPath.row, note: model, delegate: self)
     }
 }
