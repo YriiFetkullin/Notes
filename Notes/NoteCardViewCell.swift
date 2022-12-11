@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 class NoteCardViewCell: UITableViewCell {
-    private let cardView = UIView().prepateForAutoLayout()
+    private let cardContentView = UIView().prepateForAutoLayout()
     private let titleview = UILabel().prepateForAutoLayout()
     private let subtitleView = UILabel().prepateForAutoLayout()
     private var dateView = UILabel().prepateForAutoLayout()
@@ -29,11 +29,18 @@ class NoteCardViewCell: UITableViewCell {
             dateView.text = formatter.string(from: model.date)
         }
     }
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        titleview.text = nil
+        subtitleView.text = nil
+        dateView.text = nil
+    }
+    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        commonInit()
         setupStyles()
-        addRecognizer()
+        commonInit()
     }
 
     required init?(coder: NSCoder) {
@@ -41,30 +48,28 @@ class NoteCardViewCell: UITableViewCell {
     }
 
     private func commonInit() {
-        addSubview(cardView)
-        cardView.topAnchor.constraint(equalTo: topAnchor).isActive = true
-        cardView.leftAnchor.constraint(equalTo: leftAnchor, constant: 16).isActive = true
-        cardView.rightAnchor.constraint(equalTo: rightAnchor, constant: -16).isActive = true
-        cardView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -4).isActive = true
-        cardView.backgroundColor = .systemBackground
-        cardView.layer.cornerRadius = 14
+        contentView.addSubview(cardContentView)
+        cardContentView.topAnchor.constraint(equalTo: contentView.topAnchor).isActive = true
+        cardContentView.leftAnchor.constraint(equalTo: contentView.leftAnchor).isActive = true
+        cardContentView.rightAnchor.constraint(equalTo: contentView.rightAnchor).isActive = true
+        cardContentView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor).isActive = true
 
         let stackView = UIStackView().prepateForAutoLayout()
-        cardView.addSubview(stackView)
+        cardContentView.addSubview(stackView)
         stackView.axis = .vertical
         stackView.spacing = 4
 
-        stackView.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 10).isActive = true
-        stackView.leftAnchor.constraint(equalTo: cardView.leftAnchor, constant: 16).isActive = true
-        stackView.rightAnchor.constraint(equalTo: cardView.rightAnchor, constant: -16).isActive = true
+        stackView.topAnchor.constraint(equalTo: cardContentView.topAnchor, constant: 10).isActive = true
+        stackView.leftAnchor.constraint(equalTo: cardContentView.leftAnchor, constant: 16).isActive = true
+        stackView.rightAnchor.constraint(equalTo: cardContentView.rightAnchor, constant: -16).isActive = true
 
         stackView.addArrangedSubview(titleview)
         stackView.addArrangedSubview(subtitleView)
 
-        cardView.addSubview(dateView)
-        dateView.leftAnchor.constraint(equalTo: cardView.leftAnchor, constant: 16).isActive = true
-        dateView.rightAnchor.constraint(equalTo: cardView.rightAnchor, constant: -16).isActive = true
-        dateView.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -10).isActive = true
+        cardContentView.addSubview(dateView)
+        dateView.leftAnchor.constraint(equalTo: cardContentView.leftAnchor, constant: 16).isActive = true
+        dateView.rightAnchor.constraint(equalTo: cardContentView.rightAnchor, constant: -16).isActive = true
+        dateView.bottomAnchor.constraint(equalTo: cardContentView.bottomAnchor, constant: -10).isActive = true
         stackView.bottomAnchor.constraint(equalTo: dateView.topAnchor, constant: -24).isActive = true
     }
 
@@ -73,20 +78,13 @@ class NoteCardViewCell: UITableViewCell {
         subtitleView.font = .systemFont(ofSize: 10, weight: .medium)
         subtitleView.textColor = .systemGray3
         dateView.font = .systemFont(ofSize: 10, weight: .medium)
-        backgroundColor = .clear
-        selectionStyle = .none
-    }
-
-    private func addRecognizer() {
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(cardTapped))
-        cardView.addGestureRecognizer(tapGesture)
-    }
-
-    @objc
-    private func cardTapped() {
-        guard let model = model else {
-            return
-        }
-        callback?(model)
+        backgroundColor = .systemBackground
+        let selectedView = UIView()
+        selectedView.backgroundColor = .clear
+        selectedBackgroundView = selectedView
+        layer.cornerRadius = 14
+        layer.borderWidth = 2
+        layer.borderColor = UIColor.systemGray6.cgColor
+        layer.masksToBounds = true
     }
 }
