@@ -6,48 +6,36 @@
 //
 
 import UIKit
+protocol NoteViewControllerDelegate: AnyObject {
+    func updateNote(index: Int, noteModel: NotesModel)
+    func appendNote(noteModel: NotesModel)
+}
 
 class NoteViewController: UIViewController {
-    let defaults = UserDefaults.standard
-
-    private let barButton: UIBarButtonItem = {
-        let barButton = UIBarButtonItem()
-        barButton.title = "Готово"
-        return barButton
-    }()
-
-    private let textView: UITextView = {
-        let textNotes = UITextView()
-        textNotes.translatesAutoresizingMaskIntoConstraints = false
-        return textNotes
-    }()
-
-    private let titleField: UITextField = {
-        let notes = UITextField()
-        notes.translatesAutoresizingMaskIntoConstraints = false
-        return notes
-    }()
-
-    private let dateField: UITextField = {
-        let noteDate = UITextField()
-        noteDate.translatesAutoresizingMaskIntoConstraints = false
-        return noteDate
-    }()
-
-    private var datePicker: UIDatePicker = {
-        let datePicker = UIDatePicker()
-        return datePicker
-    }()
-
+    private let textView = UITextView().prepateForAutoLayout()
+    private let titleField = UITextField().prepateForAutoLayout()
+    private let dateLabel = UILabel().prepateForAutoLayout()
+    private let barButton = UIBarButtonItem(
+        title: "Готово",
+        style: .done,
+        target: nil,
+        action: #selector(barButtonTapped)
+    )
     private let formatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateFormat = "d MMMM yyyy"
+        formatter.dateFormat = "dd.MM.yyyy EEEE HH:mm"
+        formatter.locale = Locale(identifier: "ru_RU")
         return formatter
     }()
+    private var model: NotesModel?
+    weak var delegate: NoteViewControllerDelegate?
+    var noteIndex: Int?
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .systemGray6
+        setupStyles()
+
         if textView.canBecomeFirstResponder {
             textView.becomeFirstResponder()
         }
@@ -57,44 +45,42 @@ class NoteViewController: UIViewController {
         textView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor, constant: 20).isActive = true
         textView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor, constant: -20).isActive = true
 
-        titleField.placeholder = "Введите заголовок"
+        titleField.placeholder = "Введите название"
+        titleField.borderStyle = .none
+
         view.addSubview(titleField)
-        titleField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20).isActive = true
         titleField.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor, constant: 20).isActive = true
         titleField.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor, constant: -20).isActive = true
-        view.addSubview(dateField)
+        titleField.bottomAnchor.constraint(equalTo: textView.topAnchor, constant: -16).isActive = true
 
-        dateField.topAnchor.constraint(equalTo: titleField.bottomAnchor, constant: 16).isActive = true
-        dateField.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor, constant: 20).isActive = true
-        dateField.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor, constant: -20).isActive = true
-        dateField.bottomAnchor.constraint(equalTo: textView.topAnchor, constant: -16).isActive = true
-        let dateString = formatter.string(from: Date())
-        dateField.placeholder = dateString
-
-        datePicker.datePickerMode = .date
-        datePicker.addTarget(self, action: #selector(self.dateChanged), for: .allEvents)
-        dateField.inputView = datePicker
-        datePicker.preferredDatePickerStyle = .wheels
-        let localeID = Locale.preferredLanguages.first
-        datePicker.locale = Locale(identifier: localeID!)
-
-        navigationItem.rightBarButtonItem = barButton
-        barButton.target = nil
-        barButton.action = #selector(barButtonTapped(_:))
+        view.addSubview(dateLabel)
+        dateLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16).isActive = true
+        dateLabel.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor, constant: 20).isActive = true
+        dateLabel.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor, constant: -20).isActive = true
+        dateLabel.bottomAnchor.constraint(equalTo: titleField.topAnchor, constant: -12).isActive = true
+        dateLabel.textAlignment = .center
     }
 
-    func getDateFromPicker() {
-        formatter.dateFormat = "d MMMM yyyy"
-        dateField.text = formatter.string(from: datePicker.date)
-    }
-
-    @objc func dateChanged() {
-        getDateFromPicker()
+    private func setupStyles() {
+        titleField.font = .systemFont(ofSize: 24, weight: .medium)
+        textView.font = .systemFont(ofSize: 16, weight: .regular)
+        textView.backgroundColor = .systemGray6
+        dateLabel.font = .systemFont(ofSize: 14, weight: .medium)
+        dateLabel.textColor = .systemGray3
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         registerForKeyboardNotifications()
+    }
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        guard let model = model else { return }
+        if let index = noteIndex {
+            delegate?.updateNote(index: index, noteModel: model)
+        } else {
+            delegate?.appendNote(noteModel: model)
+        }
     }
 
     override func viewDidDisappear(_ animated: Bool) {
@@ -127,9 +113,11 @@ class NoteViewController: UIViewController {
         guard let infoKey = userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else { return }
         let keyboardFrameSize = infoKey.cgRectValue
         textView.contentInset.bottom = keyboardFrameSize.height
+        navigationItem.rightBarButtonItem = barButton
     }
 
     @objc func keyboardWillHide() {
+        navigationItem.rightBarButtonItem = nil
         textView.contentInset.bottom = CGFloat.zero
     }
 
@@ -137,22 +125,23 @@ class NoteViewController: UIViewController {
         view.endEditing(true)
         let model = NotesModel(
             title: titleField.text,
-            notes: textView.text,
-            date: dateField.text
+            text: textView.text,
+            date: Date()
         )
-        if !model.isEmpty, let encoded = try? JSONEncoder().encode(model) {
-            defaults.set(encoded, forKey: "notesModel")
+        if !model.isEmpty {
+            self.model = model
+            dateLabel.text = formatter.string(from: model.date)
             textView.resignFirstResponder()
             titleField.resignFirstResponder()
-            dateField.resignFirstResponder()
         } else {
             showAlert()
         }
     }
     func configureElements(model: NotesModel) {
+        self.model = model
         titleField.text = model.title
-        textView.text = model.notes
-        dateField.text = model.date
+        textView.text = model.text
+        dateLabel.text = formatter.string(from: model.date)
     }
 
     private func showAlert() {
