@@ -12,12 +12,14 @@ class NoteCardViewCell: UITableViewCell {
     private let cardContentView = UIView().prepateForAutoLayout()
     private let titleview = UILabel().prepateForAutoLayout()
     private let subtitleView = UILabel().prepateForAutoLayout()
-    private var dateView = UILabel().prepateForAutoLayout()
+    private let dateView = UILabel().prepateForAutoLayout()
+    private let shareIconView = UIImageView().prepateForAutoLayout()
     private let formatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "dd.MM.yyyy"
         return formatter
     }()
+    private let imageLoader = ImageLoader()
 
     var callback: ((NotesModel) -> Void)?
 
@@ -29,6 +31,7 @@ class NoteCardViewCell: UITableViewCell {
             if let date = model.date {
                 dateView.text = formatter.string(from: date)
             }
+            loadImage(link: model.userShareIcon)
         }
     }
 
@@ -73,6 +76,13 @@ class NoteCardViewCell: UITableViewCell {
         dateView.rightAnchor.constraint(equalTo: cardContentView.rightAnchor, constant: -16).isActive = true
         dateView.bottomAnchor.constraint(equalTo: cardContentView.bottomAnchor, constant: -10).isActive = true
         stackView.bottomAnchor.constraint(equalTo: dateView.topAnchor, constant: -24).isActive = true
+
+        cardContentView.addSubview(shareIconView)
+        shareIconView.rightAnchor.constraint(equalTo: cardContentView.rightAnchor, constant: -10).isActive = true
+        shareIconView.bottomAnchor.constraint(equalTo: cardContentView.bottomAnchor, constant: -10).isActive = true
+        shareIconView.widthAnchor.constraint(equalToConstant: 24).isActive = true
+        shareIconView.heightAnchor.constraint(equalTo: shareIconView.widthAnchor).isActive = true
+        shareIconView.contentMode = .scaleAspectFit
     }
 
     private func setupStyles() {
@@ -88,5 +98,19 @@ class NoteCardViewCell: UITableViewCell {
         layer.borderWidth = 2
         layer.borderColor = UIColor.systemGray6.cgColor
         layer.masksToBounds = true
+    }
+
+    private func loadImage(link: String?) {
+        imageLoader.loadImage(link: link) { [weak self] result in
+            //  чтобы не было цикла сильных ссылок
+            switch result {
+            case .success(let image):
+                DispatchQueue.main.async {
+                    self?.shareIconView.image = image
+                }
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
     }
 }

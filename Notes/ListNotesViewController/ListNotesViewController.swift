@@ -8,11 +8,13 @@
 import Foundation
 import UIKit
 
-class ListNotesViewController: UIViewController {
-    private let networkWorker: NetworkWorkerProtocol
+class ListNotesViewController: UIViewController, ListNotesDisplayLogic {
+    var interactor: ListNotesBusinessLogic?
+    var router: (ListNotesRoutingLogic & ListNotesDataPassing)?
+
+    private let activityIndicator = UIActivityIndicatorView().prepateForAutoLayout()
     private let tableView = UITableView().prepateForAutoLayout()
     private let addNoteButton = UIButton(type: .custom).prepateForAutoLayout()
-    private var notes: [NotesModel] = []
     private let chooseNote = UIBarButtonItem(
         title: "Выбрать",
         style: .done,
@@ -22,15 +24,6 @@ class ListNotesViewController: UIViewController {
     private var addNoteBottomConstraint: NSLayoutConstraint?
 
     private let noteCellIdentifier = "NoteCellIdentifier"
-
-    init(networkWorker: NetworkWorkerProtocol) {
-        self.networkWorker = networkWorker
-        super.init(nibName: nil, bundle: nil)
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -46,20 +39,43 @@ class ListNotesViewController: UIViewController {
         fetchNotes()
     }
 
-    private func fetchNotes() {
-        networkWorker.getNotes { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(let model):
-                self.notes = model
-                self.tableView.reloadData()
-            case .failure(let error):
-                print(error.localizedDescription)
-            }
+    func displayNotes(_ viewModel: ListNotesModels.Init.ViewModel) {
+        tableView.reloadData()
+        activityIndicator.stopAnimating()
+    }
+
+    func displayAppendedNote(_ viewModel: ListNotesModels.Append.ViewModel) {
+        let indexPath = IndexPath(row: viewModel.index, section: 0)
+        tableView.performBatchUpdates {
+            tableView.insertRows(at: [indexPath], with: .automatic)
         }
     }
 
+    func displayUpdatedNote(_ viewModel: ListNotesModels.Update.ViewModel) {
+        let indexPath = IndexPath(row: viewModel.index, section: 0)
+        tableView.performBatchUpdates {
+            tableView.reloadRows(at: [indexPath], with: .automatic)
+        }
+    }
+
+    func displayDeleteNotes(_ viewModel: ListNotesModels.Delete.ViewModel) {
+        tableView.performBatchUpdates {
+            tableView.deleteRows(at: viewModel.indicies, with: .automatic)
+        } completion: { [weak self] _ in
+            //  чтобы не было цикла сильных ссылок
+            self?.setEditing(false, animated: true)
+        }
+    }
+
+    private func fetchNotes() {
+        activityIndicator.startAnimating()
+        interactor?.requestNotes(ListNotesModels.Init.Request())
+    }
+
     private func setupUI() {
+        view.addSubview(activityIndicator)
+        activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
         navigationItem.title = "Заметки"
         navigationItem.rightBarButtonItem = chooseNote
 
@@ -94,9 +110,9 @@ class ListNotesViewController: UIViewController {
 
     @objc private func actionButtonTapped() {
         if isEditing {
-            deleteAction()
+            deleteButtonAction()
         } else {
-            addAction()
+            addButtonAction()
         }
     }
 
@@ -115,48 +131,40 @@ class ListNotesViewController: UIViewController {
         super.setEditing(editing, animated: animated)
     }
 
-    private func addAction() {
+    private func addButtonAction() {
         UIView.animate(
             withDuration: 0.3,
             delay: 0,
             options: [.curveEaseIn]
         ) {
+            // блоки анимации выполняются всегда
             self.addNoteBottomConstraint?.constant = -75
             self.view.layoutIfNeeded()
         } completion: { _ in
+            // блоки анимации выполняются всегда
             UIView.animate(
                 withDuration: 0.4,
                 delay: 0.1,
                 options: [.curveEaseOut]
             ) {
+                // блоки анимации выполняются всегда
                 self.addNoteBottomConstraint?.constant = 60
                 self.view.layoutIfNeeded()
             } completion: { _ in
-                let noteViewController = NoteViewController()
-                noteViewController.delegate = self
+                // блоки анимации выполняются всегда
                 let model = NotesModel(header: "", text: "", date: Date())
-                noteViewController.configureElements(model: model)
-                self.navigationController?.pushViewController(noteViewController, animated: true)
+                self.router?.routeToNote(index: nil, note: model, delegate: self)
             }
         }
     }
 
-    private func deleteAction() {
+    private func deleteButtonAction() {
         guard let selectedRows = tableView.indexPathsForSelectedRows else {
             chooseAlert()
             return
         }
-
-        notes = notes.enumerated().compactMap({ index, note in
-            guard !selectedRows.contains(where: { $0.row == index }) else { return nil }
-                return note
-        })
-
-        tableView.performBatchUpdates {
-            tableView.deleteRows(at: selectedRows, with: .automatic)
-        } completion: { [weak self] _ in
-            self?.setEditing(false, animated: true)
-        }
+        let request = ListNotesModels.Delete.Request(indicies: selectedRows)
+        interactor?.deleteNotes(request)
     }
 
     private func chooseAlert() {
@@ -185,6 +193,7 @@ class ListNotesViewController: UIViewController {
             initialSpringVelocity: 0.1,
             options: [.curveEaseOut]
         ) {
+            // блоки анимации выполняются всегда
             self.view?.layoutIfNeeded()
         }
     }
@@ -193,6 +202,7 @@ class ListNotesViewController: UIViewController {
         super.viewWillDisappear(animated)
         addNoteBottomConstraint?.constant = 60
         UIView.animate(withDuration: 1) {
+            // блоки анимации выполняются всегда
             self.view?.layoutIfNeeded()
         }
     }
@@ -200,43 +210,42 @@ class ListNotesViewController: UIViewController {
 
 extension ListNotesViewController: NoteViewControllerDelegate {
     func appendNote(noteModel: NotesModel) {
-        notes.insert(noteModel, at: 0)
-        tableView.reloadData()
+        let request = ListNotesModels.Append.Request(noteModel: noteModel)
+        interactor?.appendNote(request)
     }
 
     func updateNote(index: Int, noteModel: NotesModel) {
-        notes[index] = noteModel
-        tableView.reloadData()
+        let request = ListNotesModels.Update.Request(index: index, noteModel: noteModel)
+        interactor?.updateNote(request)
     }
 }
 
 extension ListNotesViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        guard let notes = router?.dataStore?.notes else { return 0 }
         return notes.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(
-            withIdentifier: noteCellIdentifier,
-            for: indexPath
-        ) as? NoteCardViewCell else { return UITableViewCell() }
+                withIdentifier: noteCellIdentifier,
+                for: indexPath
+              ) as? NoteCardViewCell
+        else { return UITableViewCell() }
 
-        cell.model = notes[indexPath.row]
+        cell.model = router?.dataStore?.notes?[indexPath.row]
         return cell
     }
 }
 
 extension ListNotesViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard !isEditing else {
+        guard
+            let model = router?.dataStore?.notes?[indexPath.row],
+            !isEditing
+        else {
             return
         }
-
-        let noteViewController = NoteViewController()
-        noteViewController.delegate = self
-        noteViewController.noteIndex = indexPath.row
-        let model = notes[indexPath.row]
-        noteViewController.configureElements(model: model)
-        navigationController?.pushViewController(noteViewController, animated: true)
+        router?.routeToNote(index: indexPath.row, note: model, delegate: self)
     }
 }
