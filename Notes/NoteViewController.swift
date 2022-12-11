@@ -36,6 +36,9 @@ class NoteViewController: UIViewController {
         view.backgroundColor = .systemGray6
         setupStyles()
 
+        textView.delegate = self
+        titleField.delegate = self
+
         if textView.canBecomeFirstResponder {
             textView.becomeFirstResponder()
         }
@@ -113,11 +116,9 @@ class NoteViewController: UIViewController {
         guard let infoKey = userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else { return }
         let keyboardFrameSize = infoKey.cgRectValue
         textView.contentInset.bottom = keyboardFrameSize.height
-        navigationItem.rightBarButtonItem = barButton
     }
 
     @objc func keyboardWillHide() {
-        navigationItem.rightBarButtonItem = nil
         textView.contentInset.bottom = CGFloat.zero
     }
 
@@ -148,11 +149,29 @@ class NoteViewController: UIViewController {
         let alert = UIAlertController(
             title: "Внимание",
             message: "Ваша заметка пуста,хотите продолжить?",
-            preferredStyle: .alert
+            preferredStyle: .actionSheet
         )
         let okButton = UIAlertAction(title: "OK", style: .default, handler: nil)
         alert.addAction(okButton)
 
         present(alert, animated: true, completion: nil)
+    }
+}
+
+extension NoteViewController: UITextViewDelegate, UITextFieldDelegate {
+    func textViewDidBeginEditing(_ textView: UITextView) {
+        navigationItem.rightBarButtonItem = barButton
+    }
+
+    func textViewDidEndEditing(_ textView: UITextView) {
+        navigationItem.rightBarButtonItem = nil
+    }
+
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        navigationItem.rightBarButtonItem = barButton
+    }
+
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        navigationItem.rightBarButtonItem = nil
     }
 }
